@@ -18,21 +18,39 @@ class HashMap {
     return hashCode;
   };
 
-  // Here I'll create a method for finding a bucketEntry
-  // Here, another for resizing
-
-  set(key, value) {
-    // Could be own method
+  getBucketIndex(key) {
     let hashKey = this.hash(key);
-    let bucketIndex = hashKey % this.buckets.length;
+    return hashKey % this.buckets.length;
+  };
+
+  getBucketEntry(key) {
+    let bucketIndex = this.getBucketIndex(key);
 
     if (!this.buckets[bucketIndex]) {
       this.buckets[bucketIndex] = [];
     };
 
-    let bucketEntry = (this.buckets[bucketIndex] || [])
+    return (this.buckets[bucketIndex] || [])
       .find(entry => entry && entry[0] === key);
-    //
+  };
+
+  resize() {
+    let newCapacity = this.buckets.length * 2;
+    let newBuckets = new Array (newCapacity).fill(null).map(() => []);
+
+    this.buckets.forEach(b => {
+      b.forEach(be => {
+        let [key, value] = be;
+        let beIndex = this.hash(key) % newCapacity;
+        newBuckets[beIndex].push([key, value]);
+      })
+    });
+
+    this.buckets = newBuckets;
+  };
+
+  set(key, value) {
+    let bucketEntry = this.getBucketEntry(key);
 
     if (bucketEntry) {
       bucketEntry[1] = value;
@@ -41,66 +59,25 @@ class HashMap {
       this.size++;
     };
 
-    // Resize (could be own method)
     if (this.size / this.buckets.length > this.loadFactor) {
-      let newCapacity = this.buckets.length * 2;
-      let newBuckets = new Array (newCapacity).fill(null).map(() => []);
-
-      this.buckets.forEach(b => {
-        b.forEach(be => {
-          let [key, value] = be;
-          let beIndex = this.hash(key) % newCapacity;
-          newBuckets[beIndex].push([key, value]);
-        })
-      });
-
-      this.buckets = newBuckets;
+      this.resize();
     };
   };
 
   get(key) {
-    // Could be own method to avoid repeating
-    let hashKey = this.hash(key);
-    let bucketIndex = hashKey % this.buckets.length;
-
-    if (!this.buckets[bucketIndex]) {
-      this.buckets[bucketIndex] = [];
-    };
-    
-    let bucketEntry = (this.buckets[bucketIndex] || [])
-      .find(e => e && e[0] === key);
-    //
+    let bucketEntry = this.getBucketEntry(key);
     return bucketEntry ? bucketEntry[1] : null;
   };
 
   has(key) {
-    // Could be own method to avoid repeating
-    let hashKey = this.hash(key);
-    let bucketIndex = hashKey % this.buckets.length;
-
-    if (!this.buckets[bucketIndex]) {
-      this.buckets[bucketIndex] = [];
-    };
-    
-    let bucketEntry = (this.buckets[bucketIndex] || [])
-      .find(e => e && e[0] === key);
-    //
+    let bucketEntry = this.getBucketEntry(key);
     return bucketEntry ? true : false;
   };
 
   remove(key) {
-    // Could be own method to avoid repeating
-    let hashKey = this.hash(key);
-    let bucketIndex = hashKey % this.buckets.length;
-
-    if (!this.buckets[bucketIndex]) {
-      this.buckets[bucketIndex] = [];
-    };
+    let bucketIndex = this.getBucketIndex(key);
+    let bucketEntry = this.getBucketEntry(key);
     
-    let bucketEntry = (this.buckets[bucketIndex] || [])
-      .find(e => e && e[0] === key);
-    //
-
     if (!bucketEntry) {
       return false;
     } else {

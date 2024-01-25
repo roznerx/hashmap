@@ -1,4 +1,4 @@
-class HashMap {
+class HashSet {
   constructor (initialCapacity, loadFactor) {
     // This sets the buckets with empty arrays
     this.buckets = new Array(initialCapacity).fill(null).map(() => []);
@@ -37,26 +37,25 @@ class HashMap {
   resize() {
     let newCapacity = this.buckets.length * 2;
     let newBuckets = new Array (newCapacity).fill(null).map(() => []);
-
+    
     this.buckets.forEach(b => {
-      b.forEach(be => {
-        let [key, value] = be;
-        let beIndex = this.hash(key) % newCapacity;
-        newBuckets[beIndex].push([key, value]);
-      })
+      b.forEach(k => {
+        let index = this.hash(k[0]) % newCapacity;
+        newBuckets[index].push([k[0]]);
+      });
     });
 
     this.buckets = newBuckets;
   };
 
-  set(key, value) {
+  set(key) {
     let bucketIndex = this.getBucketIndex(key);
     let bucketEntry = this.getBucketEntry(key);
 
     if (bucketEntry) {
-      bucketEntry[1] = value;
+      bucketEntry[0] = key;
     } else {
-      this.buckets[bucketIndex].push([key, value]);
+      this.buckets[bucketIndex].push([key]);
       this.size++;
     };
 
@@ -67,7 +66,7 @@ class HashMap {
 
   get(key) {
     let bucketEntry = this.getBucketEntry(key);
-    return bucketEntry ? bucketEntry[1] : null;
+    return bucketEntry ? bucketEntry[0] : null;
   };
 
   has(key) {
@@ -82,7 +81,7 @@ class HashMap {
     if (!bucketEntry) {
       return false;
     } else {
-      this.buckets[bucketIndex].length = 0;
+      this.buckets[bucketIndex] = [];
       this.size--;
     };
   };
@@ -102,33 +101,17 @@ class HashMap {
     let keyArr = [];
 
     this.buckets.forEach(b => {
-      b.forEach(e => {
-        keyArr.push(e[0]);
-      });
+      keyArr.push(b[0]);
     });
 
     return keyArr;
-  };
-
-  values() {
-    let valueArr = [];
-
-    this.buckets.forEach(b => {
-      b.forEach(e => {
-        valueArr.push(e[1]);
-      });
-    });
-
-    return valueArr;
   };
 
   entries() {
     let entriesArr = [];
 
     this.buckets.forEach(b => {
-      b.forEach(e => {
-        entriesArr.push(e);
-      });
+      entriesArr.push(b[0]);
     });
 
     return entriesArr;
